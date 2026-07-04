@@ -67,23 +67,23 @@ st.markdown("""
 # ====== App Layout ======
 st.markdown('<div class="main-container">', unsafe_allow_html=True)
 
-st.title("🎬 Movie Review Analysis")
+st.title(" Movie Review Analysis")
 
 # Load model and scaler
 try:
     model = pk.load(open('model.pkl', 'rb'))
     scaler = pk.load(open('scaler.pkl', 'rb'))
 except FileNotFoundError:
-    st.error("🔍 Model files not found")
+    st.error(" Model files not found")
     st.stop()
 
 # User input
-review = st.text_input('📝 Enter your movie review:', 
+review = st.text_input(' Enter your movie review:', 
                       placeholder="The acting was superb but the plot was confusing...")
 
-if st.button('🔎 Analyze'):
+if st.button(' Analyze'):
     if not review.strip():
-        st.warning("⚠️ Please enter a review")
+        st.warning(" Please enter a review")
     else:
         try:
             # Transform and predict
@@ -100,9 +100,7 @@ if st.button('🔎 Analyze'):
             st.error(f"Error: {str(e)}")
 
 # Footer
-st.markdown("""
-<div class="footer">
-    Sentiment analysis powered by machine learning
+
 </div>
 </div>
 """, unsafe_allow_html=True)
