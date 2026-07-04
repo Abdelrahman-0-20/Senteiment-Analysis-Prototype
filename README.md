@@ -2,7 +2,7 @@
 
 
 Movie Review Sentiment Analysis (NLP)
-A Python-based ML project that predicts whether a movie review is positive (👍) or negative (👎) using supervised learning.
+A Python-based ML project that predicts whether a movie review is positive  or negative  using supervised learning.
 
  What it does:
  Trains a model (e.g., Logistic Regression, Naive Bayes, or Neural Networks) on labeled review data.
