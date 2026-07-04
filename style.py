@@ -99,8 +99,3 @@ if st.button(' Analyze'):
         except Exception as e:
             st.error(f"Error: {str(e)}")
 
-# Footer
-
-</div>
-</div>
-""", unsafe_allow_html=True)
