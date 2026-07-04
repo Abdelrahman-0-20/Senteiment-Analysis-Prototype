@@ -1,47 +1,28 @@
-# app.py
-from flask import Flask, request, render_template_string
+import streamlit as st
 from transformers import pipeline
 
-app = Flask(__name__)
+@st.cache_resource
+def load_model():
+    return pipeline(
+        "sentiment-analysis",
+        model="distilbert-base-uncased-finetuned-sst-2-english"
+    )
 
-# Load a sentiment analysis pipeline (downloads the model on first run)
-sentiment_pipe = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
+pipe = load_model()
 
-HTML_TEMPLATE = """
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Review Sentiment</title>
-</head>
-<body>
-    <h1>Review Sentiment Analyzer</h1>
-    <form method="post">
-        <textarea name="review" rows="8" cols="60" placeholder="Write your review here...">{{ review_text }}</textarea><br><br>
-        <input type="submit" value="Analyze Sentiment">
-    </form>
-    {% if result %}
-        <h2>Result: {{ result }}</h2>
-    {% endif %}
-</body>
-</html>
-"""
+st.title("Review Sentiment Analyzer")
 
-@app.route("/", methods=["GET", "POST"])
-def index():
-    result = None
-    review_text = ""
-    if request.method == "POST":
-        review_text = request.form.get("review", "")
-        if review_text.strip():
-            # Run sentiment analysis (truncation avoids max-length errors)
-            output = sentiment_pipe(review_text, truncation=True)[0]
-            # Map model labels to Positive/Negative
-            label = output["label"]
-            if label == "POSITIVE":
-                result = "Positive"
-            else:
-                result = "Negative"
-    return render_template_string(HTML_TEMPLATE, result=result, review_text=review_text)
+user_review = st.text_area(
+    "Write your review here:",
+    height=150,
+    placeholder="Write your review here..."
+)
 
-if __name__ == "__main__":
-    app.run(debug=True)
+if st.button("Analyze Sentiment"):
+    if user_review.strip():
+        output = pipe(user_review, truncation=True)[0]
+        label = output["label"]
+        result = "Positive" if label == "POSITIVE" else "Negative"
+        st.subheader(f"Result: {result}")
+    else:
+        st.warning("Please enter a review.")
