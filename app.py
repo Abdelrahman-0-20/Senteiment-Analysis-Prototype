@@ -1,22 +1,47 @@
-import pandas as pd
-import pickle as pk
-from sklearn.feature_extraction.text import TfidfVectorizer
-import streamlit as st
+# app.py
+from flask import Flask, request, render_template_string
+from transformers import pipeline
 
-# Load the model and scaler
-model = pk.load(open('model.pkl', 'rb'))
-scaler = pk.load(open('scaler.pkl', 'rb'))
+app = Flask(__name__)
 
-# User input for movie review
-review = st.text_input('Enter Movie Review')
+# Load a sentiment analysis pipeline (downloads the model on first run)
+sentiment_pipe = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
 
-if st.button('Predict'):
-    # Transform the input and make prediction
-    review_scale = scaler.transform([review]).toarray()
-    result = model.predict(review_scale)
-    
-    # Display the result
-    if result[0] == 0:
-        st.error("Negative Review ")
-    else:
-        st.success("Positive Review ")
+HTML_TEMPLATE = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Review Sentiment</title>
+</head>
+<body>
+    <h1>Review Sentiment Analyzer</h1>
+    <form method="post">
+        <textarea name="review" rows="8" cols="60" placeholder="Write your review here...">{{ review_text }}</textarea><br><br>
+        <input type="submit" value="Analyze Sentiment">
+    </form>
+    {% if result %}
+        <h2>Result: {{ result }}</h2>
+    {% endif %}
+</body>
+</html>
+"""
+
+@app.route("/", methods=["GET", "POST"])
+def index():
+    result = None
+    review_text = ""
+    if request.method == "POST":
+        review_text = request.form.get("review", "")
+        if review_text.strip():
+            # Run sentiment analysis (truncation avoids max-length errors)
+            output = sentiment_pipe(review_text, truncation=True)[0]
+            # Map model labels to Positive/Negative
+            label = output["label"]
+            if label == "POSITIVE":
+                result = "Positive"
+            else:
+                result = "Negative"
+    return render_template_string(HTML_TEMPLATE, result=result, review_text=review_text)
+
+if __name__ == "__main__":
+    app.run(debug=True)
